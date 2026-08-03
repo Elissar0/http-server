@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { handlerReadiness } from "./health.js";
 import { handlerMetrics, handlerReset } from "./metrics.js";
-import { handlerCreateChirp } from "./chirps.js";
+import { handlerCreateChirp, handlerGetAllChirps } from "./chirps.js";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import {
   BadRequestError,
@@ -23,6 +23,7 @@ app.get("/api/healthz", handlerReadiness);
 app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset", handlerReset);
 app.post("/api/chirps", handlerCreateChirp);
+app.get("/api/chirps", handlerGetAllChirps);
 app.post("/api/users", handlerCreateUser);
 
 function errorHandler(

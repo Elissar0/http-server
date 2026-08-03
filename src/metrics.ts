@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { config } from "./config.js";
 import { ForbiddenError } from "./errors.js";
-import { deleteAllUsers } from "./db/queries.js";
+import { deleteAllUsers } from "./db/queries/user.js";
 
 export function handlerMetrics(req: Request, res: Response) {
   res.set("Content-Type", "text/html; charset=utf-8");

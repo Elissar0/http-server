@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
-import { createChirp } from "./db/chirps.js";
+import { createChirp, getAllChirps } from "./db/queries/chirps.js";
 
 const profaneWords = ["kerfuffle", "sharbert", "fornax"];
 
@@ -66,4 +66,19 @@ export async function handlerCreateChirp(req: Request, res: Response) {
 
   res.header("Content-Type", "application/json");
   res.status(201).send(JSON.stringify(response));
+}
+
+export async function handlerGetAllChirps(req: Request, res: Response) {
+  const chirps = await getAllChirps();
+
+  const response: ChirpResponse[] = chirps.map((chirp) => ({
+    id: chirp.id,
+    createdAt: chirp.createdAt,
+    updatedAt: chirp.updatedAt,
+    body: chirp.body,
+    userId: chirp.userId,
+  }));
+
+  res.header("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify(response));
 }

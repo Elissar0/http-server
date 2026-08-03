@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
-import { createUser } from "./db/queries.js";
+import { createUser } from "./db/queries/user.js";
 
 type UserResponse = {
   id: string;
