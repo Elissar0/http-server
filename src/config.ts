@@ -15,6 +15,7 @@ type APIConfig = {
   dbURL: string;
   platform: string;
   jwtSecret: string;
+  polkaKey: string;
 };
 
 type DBConfig = {
@@ -34,10 +35,11 @@ export const config: Config = {
             migrationsFolder: "./src/db/migrations",
         }
     },
-    api: {
-        fileserverHits: 0,
-        dbURL: envOrThrow("DB_URL"),
-        platform: envOrThrow("PLATFORM"),
-        jwtSecret: envOrThrow("JWT_SECRET"),
-    }
+   api: {
+    fileserverHits: 0,
+    dbURL: envOrThrow("DB_URL"),
+    platform: envOrThrow("PLATFORM"),
+    jwtSecret: envOrThrow("JWT_SECRET"),
+    polkaKey: envOrThrow("POLKA_KEY"),
+}
 };

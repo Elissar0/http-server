@@ -67,6 +67,21 @@ export function getBearerToken(req: Request): string {
   return token;
 }
 
-export function makeRefreshToken(): string {
-  return randomBytes(32).toString("hex");
+export function getAPIKey(req: Request): string {
+  const authHeader = req.get("Authorization");
+
+  if (!authHeader) {
+    throw new UnauthorizedError("Malformed authorization header");
+  }
+
+  const apiKey = authHeader.replace("ApiKey", "").trim();
+
+  if (!apiKey) {
+    throw new UnauthorizedError("Malformed authorization header");
+  }
+
+  return apiKey;
 }
+
+export function makeRefreshToken(): string {
+  return randomBytes(32).toString("hex");}
