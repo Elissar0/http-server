@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import {
   createChirp,
+  deleteChirp,
   getAllChirps,
   getChirpById,
 } from "./db/queries/chirps.js";
 import { getBearerToken, validateJWT } from "./auth.js";
 import { config } from "./config.js";
-import { BadRequestError, NotFoundError } from "./errors.js";
+import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.js";
 
 const profaneWords = ["kerfuffle", "sharbert", "fornax"];
 
@@ -106,4 +107,24 @@ export async function handlerGetChirp(req: Request, res: Response) {
 
   res.header("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(response));
+}
+
+export async function handlerDeleteChirp(req: Request, res: Response) {
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
+
+  const chirpId = req.params.chirpId as string;
+  const chirp = await getChirpById(chirpId);
+
+  if (!chirp) {
+    throw new NotFoundError("Chirp not found");
+  }
+
+  if (chirp.userId !== userId) {
+    throw new ForbiddenError("You are not the author of this chirp");
+  }
+
+  await deleteChirp(chirpId);
+
+  res.sendStatus(204);
 }

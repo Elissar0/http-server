@@ -3,6 +3,7 @@ import { handlerReadiness } from "./health.js";
 import { handlerMetrics, handlerReset } from "./metrics.js";
 import {
   handlerCreateChirp,
+  handlerDeleteChirp,
   handlerGetAllChirps,
   handlerGetChirp,
 } from "./chirps.js";
@@ -35,6 +36,7 @@ app.post("/api/login", handlerLogin);
 app.post("/api/refresh", handlerRefresh);
 app.post("/api/revoke", handlerRevoke);
 app.put("/api/users", handlerUpdateUser);
+app.delete("/api/chirps/:chirpId", handlerDeleteChirp);
 
 function errorHandler(
   err: Error,
