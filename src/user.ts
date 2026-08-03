@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { hashPassword, checkPasswordHash } from "./auth.js";
+import { hashPassword, checkPasswordHash, makeJWT } from "./auth.js";
+import { config } from "./config.js";
 import { BadRequestError, UnauthorizedError } from "./errors.js";
 import { createUser, getUserByEmail } from "./db/queries/user.js";
 
@@ -9,6 +10,13 @@ type UserResponse = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+type LoginResponse = UserResponse & {
+  token: string;
+};
+
+const DEFAULT_EXPIRATION_SECONDS = 3600;
+const MAX_EXPIRATION_SECONDS = 3600;
 
 export async function handlerCreateUser(req: Request, res: Response) {
   type parameters = {
@@ -52,6 +60,7 @@ export async function handlerLogin(req: Request, res: Response) {
   type parameters = {
     email: string;
     password: string;
+    expiresInSeconds?: number;
   };
 
   const params: parameters = req.body;
@@ -66,6 +75,7 @@ export async function handlerLogin(req: Request, res: Response) {
 
   const user = await getUserByEmail(params.email);
 
+
   if (!user) {
     throw new UnauthorizedError("incorrect email or password");
   }
@@ -79,11 +89,22 @@ export async function handlerLogin(req: Request, res: Response) {
     throw new UnauthorizedError("incorrect email or password");
   }
 
-  const response: UserResponse = {
+  let expiresIn = DEFAULT_EXPIRATION_SECONDS;
+  if (
+    typeof params.expiresInSeconds === "number" &&
+    params.expiresInSeconds > 0
+  ) {
+    expiresIn = Math.min(params.expiresInSeconds, MAX_EXPIRATION_SECONDS);
+  }
+
+  const token = makeJWT(user.id, expiresIn, config.api.jwtSecret);
+
+  const response: LoginResponse = {
     id: user.id,
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    token,
   };
 
   res.header("Content-Type", "application/json");

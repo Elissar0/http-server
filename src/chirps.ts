@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
-import { createChirp, getAllChirps, getChirpById } from "./db/queries/chirps.js";
+import {
+  createChirp,
+  getAllChirps,
+  getChirpById,
+} from "./db/queries/chirps.js";
+import { getBearerToken, validateJWT } from "./auth.js";
+import { config } from "./config.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 
 const profaneWords = ["kerfuffle", "sharbert", "fornax"];
@@ -28,8 +34,10 @@ type ChirpResponse = {
 export async function handlerCreateChirp(req: Request, res: Response) {
   type parameters = {
     body: string;
-    userId: string;
   };
+
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
 
   const params: parameters = req.body;
 
@@ -41,15 +49,11 @@ export async function handlerCreateChirp(req: Request, res: Response) {
     throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
-  if (!params.userId || typeof params.userId !== "string") {
-    throw new BadRequestError("userId is required");
-  }
-
   const cleanedBody = cleanBody(params.body);
 
   const chirp = await createChirp({
     body: cleanedBody,
-    userId: params.userId,
+    userId,
   });
 
   if (!chirp) {
@@ -84,7 +88,8 @@ export async function handlerGetAllChirps(req: Request, res: Response) {
 }
 
 export async function handlerGetChirp(req: Request, res: Response) {
-const chirpId = req.params.chirpId as string;
+  const chirpId = req.params.chirpId as string;
+
   const chirp = await getChirpById(chirpId);
 
   if (!chirp) {

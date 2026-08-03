@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
+import type { Request } from "express";
 import { UnauthorizedError } from "./errors.js";
 
 export async function hashPassword(password: string): Promise<string> {
@@ -47,4 +48,20 @@ export function validateJWT(tokenString: string, secret: string): string {
   }
 
   return decoded.sub;
+}
+
+export function getBearerToken(req: Request): string {
+  const authHeader = req.get("Authorization");
+
+  if (!authHeader) {
+    throw new UnauthorizedError("Malformed authorization header");
+  }
+
+  const token = authHeader.replace("Bearer", "").trim();
+
+  if (!token) {
+    throw new UnauthorizedError("Malformed authorization header");
+  }
+
+  return token;
 }
