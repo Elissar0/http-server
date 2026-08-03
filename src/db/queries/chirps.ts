@@ -12,15 +12,34 @@ export async function getAllChirps() {
     .select()
     .from(chirps)
     .orderBy(asc(chirps.createdAt));
+
+  return results;
+}
+
+export async function getChirpsByAuthorId(authorId: string) {
+  const results = await db
+    .select()
+    .from(chirps)
+    .where(eq(chirps.userId, authorId))
+    .orderBy(asc(chirps.createdAt));
+
   return results;
 }
 
 export async function getChirpById(id: string) {
-  const [result] = await db.select().from(chirps).where(eq(chirps.id, id));
+  const [result] = await db
+    .select()
+    .from(chirps)
+    .where(eq(chirps.id, id));
+
   return result;
 }
 
 export async function deleteChirp(id: string) {
-  const [result] = await db.delete(chirps).where(eq(chirps.id, id)).returning();
+  const [result] = await db
+    .delete(chirps)
+    .where(eq(chirps.id, id))
+    .returning();
+
   return result;
 }
