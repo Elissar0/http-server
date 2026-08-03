@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { handlerReadiness } from "./health.js";
 import { handlerMetrics, handlerReset } from "./metrics.js";
-import { handlerCreateChirp, handlerGetAllChirps } from "./chirps.js";
+// import { handlerCreateChirp, handlerGetAllChirps } from "./chirps.js";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import {
   BadRequestError,
@@ -11,6 +11,12 @@ import {
 } from "./errors.js";
 import express from "express";
 import { handlerCreateUser } from "./user.js";
+
+import {
+  handlerCreateChirp,
+  handlerGetAllChirps,
+  handlerGetChirp,
+} from "./chirps.js";
 
 const app = express();
 const PORT = 8080;
@@ -24,6 +30,7 @@ app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset", handlerReset);
 app.post("/api/chirps", handlerCreateChirp);
 app.get("/api/chirps", handlerGetAllChirps);
+app.get("/api/chirps/:chirpId", handlerGetChirp);
 app.post("/api/users", handlerCreateUser);
 
 function errorHandler(
