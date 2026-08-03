@@ -15,7 +15,7 @@ import {
   NotFoundError,
 } from "./errors.js";
 import express from "express";
-import { handlerCreateUser, handlerLogin } from "./user.js";
+import { handlerCreateUser, handlerLogin, handlerUpdateUser } from "./user.js";
 
 const app = express();
 const PORT = 8080;
@@ -34,6 +34,7 @@ app.post("/api/users", handlerCreateUser);
 app.post("/api/login", handlerLogin);
 app.post("/api/refresh", handlerRefresh);
 app.post("/api/revoke", handlerRevoke);
+app.put("/api/users", handlerUpdateUser);
 
 function errorHandler(
   err: Error,

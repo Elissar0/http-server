@@ -1,9 +1,17 @@
 import { Request, Response } from "express";
+
 import { saveRefreshToken } from "./db/queries/refreshTokens.js";
-import { hashPassword, checkPasswordHash, makeJWT, makeRefreshToken } from "./auth.js";
+import {
+  hashPassword,
+  checkPasswordHash,
+  makeJWT,
+  makeRefreshToken,
+  getBearerToken,
+  validateJWT,
+} from "./auth.js";
 import { config } from "./config.js";
 import { BadRequestError, UnauthorizedError } from "./errors.js";
-import { createUser, getUserByEmail } from "./db/queries/user.js";
+import { createUser, getUserByEmail, updateUser } from "./db/queries/user.js";
 
 type UserResponse = {
   id: string;
@@ -111,6 +119,44 @@ export async function handlerLogin(req: Request, res: Response) {
     updatedAt: user.updatedAt,
     token,
     refreshToken,
+  };
+
+  res.header("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify(response));
+}
+
+export async function handlerUpdateUser(req: Request, res: Response) {
+  type parameters = {
+    email: string;
+    password: string;
+  };
+
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
+
+  const params: parameters = req.body;
+
+  if (!params.email || typeof params.email !== "string") {
+    throw new BadRequestError("Email is required");
+  }
+
+  if (!params.password || typeof params.password !== "string") {
+    throw new BadRequestError("Password is required");
+  }
+
+  const hashedPassword = await hashPassword(params.password);
+
+  const updatedUser = await updateUser(userId, params.email, hashedPassword);
+
+  if (!updatedUser) {
+    throw new BadRequestError("Something went wrong updating user");
+  }
+
+  const response: UserResponse = {
+    id: updatedUser.id,
+    email: updatedUser.email,
+    createdAt: updatedUser.createdAt,
+    updatedAt: updatedUser.updatedAt,
   };
 
   res.header("Content-Type", "application/json");
