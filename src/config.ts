@@ -1,3 +1,5 @@
+import { MigrationConfig } from "drizzle-orm/migrator";
+
 process.loadEnvFile();
 
 function envOrThrow(key: string): string {
@@ -11,9 +13,29 @@ function envOrThrow(key: string): string {
 type APIConfig = {
   fileserverHits: number;
   dbURL: string;
+   platform: string;
 };
 
-export const config: APIConfig = {
-  fileserverHits: 0,
-  dbURL: envOrThrow("DB_URL"),
+type DBConfig = {
+url: string;
+migrationConfig: MigrationConfig;
+}
+
+type Config = {
+    db: DBConfig;
+    api: APIConfig
+}
+
+export const config: Config = {
+    db:{
+        url: "postgres://postgres:postgres@localhost:5432/chirpy?sslmode=disable",
+        migrationConfig: {
+            migrationsFolder: "./src/db/migrations",
+        }
+    },
+    api: {
+        fileserverHits: 0,
+        dbURL: envOrThrow("DB_URL"),
+        platform: envOrThrow("PLATFORM"),
+    }
 };
