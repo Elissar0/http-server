@@ -82,9 +82,15 @@ export async function handlerGetAllChirps(req: Request, res: Response) {
     authorId = authorIdQuery;
   }
 
+  const sortOrder = req.query.sort === "desc" ? "desc" : "asc";
+
   const chirps = authorId
     ? await getChirpsByAuthorId(authorId)
     : await getAllChirps();
+
+  if (sortOrder === "desc") {
+    chirps.reverse();
+  }
 
   const response: ChirpResponse[] = chirps.map((chirp) => ({
     id: chirp.id,
