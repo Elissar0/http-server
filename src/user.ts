@@ -18,6 +18,7 @@ type UserResponse = {
   email: string;
   createdAt: Date;
   updatedAt: Date;
+  isChirpyRed: boolean;
 };
 
 type LoginResponse = UserResponse & {
@@ -60,6 +61,7 @@ export async function handlerCreateUser(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed,
   };
 
   res.header("Content-Type", "application/json");
@@ -117,6 +119,7 @@ export async function handlerLogin(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed,
     token,
     refreshToken,
   };
@@ -157,8 +160,10 @@ export async function handlerUpdateUser(req: Request, res: Response) {
     email: updatedUser.email,
     createdAt: updatedUser.createdAt,
     updatedAt: updatedUser.updatedAt,
+    isChirpyRed: updatedUser.isChirpyRed,
   };
 
   res.header("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(response));
 }
+  

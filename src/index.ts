@@ -17,6 +17,7 @@ import {
 } from "./errors.js";
 import express from "express";
 import { handlerCreateUser, handlerLogin, handlerUpdateUser } from "./user.js";
+import { handlerPolkaWebhook } from "./polka.js";
 
 const app = express();
 const PORT = 8080;
@@ -37,6 +38,8 @@ app.post("/api/refresh", handlerRefresh);
 app.post("/api/revoke", handlerRevoke);
 app.put("/api/users", handlerUpdateUser);
 app.delete("/api/chirps/:chirpId", handlerDeleteChirp);
+app.post("/api/polka/webhooks", handlerPolkaWebhook);
+
 
 function errorHandler(
   err: Error,
