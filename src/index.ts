@@ -10,7 +10,7 @@ import {
   NotFoundError,
 } from "./errors.js";
 import express from "express";
-import { handlerCreateUser } from "./user.js";
+import { handlerCreateUser, handlerLogin } from "./user.js";
 
 import {
   handlerCreateChirp,
@@ -32,6 +32,7 @@ app.post("/api/chirps", handlerCreateChirp);
 app.get("/api/chirps", handlerGetAllChirps);
 app.get("/api/chirps/:chirpId", handlerGetChirp);
 app.post("/api/users", handlerCreateUser);
+app.post("/api/login", handlerLogin);
 
 function errorHandler(
   err: Error,
