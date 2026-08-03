@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { hashPassword, checkPasswordHash, makeJWT } from "./auth.js";
+import { saveRefreshToken } from "./db/queries/refreshTokens.js";
+import { hashPassword, checkPasswordHash, makeJWT, makeRefreshToken } from "./auth.js";
 import { config } from "./config.js";
 import { BadRequestError, UnauthorizedError } from "./errors.js";
 import { createUser, getUserByEmail } from "./db/queries/user.js";
@@ -13,10 +14,11 @@ type UserResponse = {
 
 type LoginResponse = UserResponse & {
   token: string;
+  refreshToken: string;
 };
 
-const DEFAULT_EXPIRATION_SECONDS = 3600;
-const MAX_EXPIRATION_SECONDS = 3600;
+const ACCESS_TOKEN_EXPIRATION_SECONDS = 60 * 60; // 1 hour
+const REFRESH_TOKEN_EXPIRATION_MS = 60 * 24 * 60 * 60 * 1000; // 60 days
 
 export async function handlerCreateUser(req: Request, res: Response) {
   type parameters = {
@@ -60,7 +62,6 @@ export async function handlerLogin(req: Request, res: Response) {
   type parameters = {
     email: string;
     password: string;
-    expiresInSeconds?: number;
   };
 
   const params: parameters = req.body;
@@ -75,7 +76,6 @@ export async function handlerLogin(req: Request, res: Response) {
 
   const user = await getUserByEmail(params.email);
 
-
   if (!user) {
     throw new UnauthorizedError("incorrect email or password");
   }
@@ -89,15 +89,20 @@ export async function handlerLogin(req: Request, res: Response) {
     throw new UnauthorizedError("incorrect email or password");
   }
 
-  let expiresIn = DEFAULT_EXPIRATION_SECONDS;
-  if (
-    typeof params.expiresInSeconds === "number" &&
-    params.expiresInSeconds > 0
-  ) {
-    expiresIn = Math.min(params.expiresInSeconds, MAX_EXPIRATION_SECONDS);
-  }
+  const token = makeJWT(
+    user.id,
+    ACCESS_TOKEN_EXPIRATION_SECONDS,
+    config.api.jwtSecret,
+  );
 
-  const token = makeJWT(user.id, expiresIn, config.api.jwtSecret);
+  const refreshToken = makeRefreshToken();
+
+  await saveRefreshToken({
+    token: refreshToken,
+    userId: user.id,
+    expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION_MS),
+    revokedAt: null,
+  });
 
   const response: LoginResponse = {
     id: user.id,
@@ -105,6 +110,7 @@ export async function handlerLogin(req: Request, res: Response) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     token,
+    refreshToken,
   };
 
   res.header("Content-Type", "application/json");
